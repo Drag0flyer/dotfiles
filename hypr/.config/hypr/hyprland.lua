@@ -50,7 +50,7 @@ local menu = "hyprlauncher"
 -- Or execute your favorite apps at launch like this:
 --
 hl.on("hyprland.start", function () 
-  hl.exec_cmd(terminal)
+  -- hl.exec_cmd(terminal)
   -- 1. Synchronisation D-Bus & Systemd
   hl.exec_cmd("dbus-update-activation-environment --systemd WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP=Hyprland XDG_SESSION_TYPE=wayland")
   hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE")
@@ -67,7 +67,8 @@ hl.on("hyprland.start", function ()
   -- 5. Barre de statut
   hl.exec_cmd("waybar")
 --  hl.exec_cmd("nm-applet")
---  hl.exec_cmd("waybar & hyprpaper & dunst &")
+  hl.exec_cmd("hyprpaper")
+  hl.exec_cmd("sh -c 'sleep 3 && nmcli dev wifi list --rescan yes >/dev/null 2>&1 &'")
 end)
 
 
@@ -113,7 +114,7 @@ hl.config({
         border_size = 2,
 
         col = {
-            active_border   = { colors = {"rgba(33ccffee)", "rgba(00ff99ee)"}, angle = 45 },
+            active_border   = { colors = {"rgba(ff79c6ee)", "rgba(bd93f9ee)"}, angle = 45 },
             inactive_border = "rgba(595959aa)",
         },
 
@@ -384,4 +385,21 @@ hl.window_rule({
 
     move  = "20 monitor_h-120",
     float = true,
+})
+
+-- Règle pour la modale réseau nmtui
+hl.window_rule({
+    name  = "nmtui-floating-dialog",
+    match = { class = "^nmtui-float$" },
+
+    float  = true,
+    size   = "650 450",
+    center = true,
+})
+
+-- Désactiver le flou pour Kitty
+hl.window_rule({
+    name    = "kitty-no-blur",
+    match   = { class = "^(kitty)$" },
+    no_blur = true,
 })

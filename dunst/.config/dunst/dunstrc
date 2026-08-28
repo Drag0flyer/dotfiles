@@ -1,0 +1,63 @@
+[global]
+    # Typographie & Rendu
+    font = Fira Code 11
+    markup = yes
+    format = "<b>%s</b>\n%b"
+    alignment = left
+    show_age_threshold = 60
+    word_wrap = yes
+    ellipsize = middle
+    ignore_newline = no
+    stack_duplicates = true
+    hide_duplicate_count = false
+    show_indicators = yes
+
+    # Dimensions & Position (Nouvelle syntaxe dunst 1.12+)
+    width = (0, 380)
+    height = (0, 300)
+    offset = (20, 20)
+    origin = top-right
+    notification_limit = 5
+    indicate_hidden = yes
+
+    # Style visuel
+    transparency = 0
+    corner_radius = 12
+    corners = all
+    frame_width = 2
+    frame_color = "#ff007f"
+    separator_height = 2
+    separator_color = frame
+    padding = 14
+    horizontal_padding = 16
+    text_icon_padding = 12
+
+    # Icônes
+    icon_position = left
+    min_icon_size = 32
+    max_icon_size = 48
+    icon_theme = "breeze-dark"
+    enable_recursive_icon_lookup = true
+
+    # Comportement souris
+    mouse_left_click = close_current
+    mouse_middle_click = do_action, close_current
+    mouse_right_click = close_all
+
+[urgency_low]
+    background = "#14141eb3"
+    foreground = "#f8f8f2"
+    frame_color = "#bd93f9"
+    timeout = 4
+
+[urgency_normal]
+    background = "#14141eb3"
+    foreground = "#f8f8f2"
+    frame_color = "#ff007f"
+    timeout = 6
+
+[urgency_critical]
+    background = "#14141eb3"
+    foreground = "#ff5555"
+    frame_color = "#ff5555"
+    timeout = 0

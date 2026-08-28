@@ -116,7 +116,7 @@
     "tooltip-format-disconnected": "Disconnected",
     "interval": 3,
     "spacing": 1,
-    "on-click": "kitty -e nmtui"
+    "on-click": "kitty --class nmtui-float -e bash -c 'NEWT_COLORS=\"root=black,black; window=black,black; border=cyan,black; textbox=white,black; button=black,cyan; actbutton=cyan,black; listbox=white,black; actlistbox=black,cyan; actsellistbox=black,cyan\" nmtui'"
   },
 
   "battery": {
