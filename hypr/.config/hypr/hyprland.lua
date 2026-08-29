@@ -180,10 +180,26 @@ hl.animation({ leaf = "layersIn", enabled = true, speed = 4, bezier = "easeOutQu
 hl.animation({ leaf = "layersOut", enabled = true, speed = 1.5, bezier = "linear", style = "fade" })
 hl.animation({ leaf = "fadeLayersIn", enabled = true, speed = 1.79, bezier = "almostLinear" })
 hl.animation({ leaf = "fadeLayersOut", enabled = true, speed = 1.39, bezier = "almostLinear" })
-hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
-hl.animation({ leaf = "workspacesIn", enabled = true, speed = 1.21, bezier = "almostLinear", style = "fade" })
-hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "almostLinear", style = "fade" })
+hl.animation({ leaf = "workspaces", enabled = true, speed = 3, bezier = "overshot", style = "slidefade 40%" })
+hl.animation({ leaf = "workspacesIn", enabled = true, speed = 3, bezier = "overshot", style = "slidefade 35%" })
+hl.animation({ leaf = "workspacesOut", enabled = true, speed = 2.5, bezier = "almostLinear", style = "slidefade 35%" })
 hl.animation({ leaf = "zoomFactor", enabled = true, speed = 7, bezier = "quick" })
+
+hl.curve("overshot", {
+	type = "bezier",
+	points = { { 0.05, 0.9 }, { 0.1, 1.1 } }
+})
+
+-- hl.animation({ leaf = "workspaces", enabled = true, speed = 1.94, bezier = "workspaceEpic", style = "slidefade 20%" })
+-- hl.animation({ leaf = "workspacesIn", enabled = true, speed = 1.21, bezier = "workspaceEpic", style = "slidefade 20%" })
+-- hl.animation({ leaf = "workspacesOut", enabled = true, speed = 1.94, bezier = "workspaceEpic", style = "slidefade 20%" })
+
+-- almostLinear
+
+-- hl.curve("workspaceEpic", {
+-- 	type = "bezier",
+-- 	points = { { 0.0, 0.1 }, { 0.1, 1.35 } }
+-- })
 
 -- Ref https://wiki.hypr.land/Configuring/Basics/Workspace-Rules/
 -- "Smart gaps" / "No gaps when only"
@@ -312,9 +328,9 @@ hl.bind(mainMod .. " + SHIFT + D", hl.dsp.window.move({ workspace = "special:mag
 hl.bind(
 	mainMod .. " + SHIFT + S",
 	hl.dsp.exec_cmd(
-	"noctalia msg screenshot-region"
+		"noctalia msg screenshot-region"
 		--	'bash -c \'grim -g "$(slurp)" - | wl-copy && notify-send "Capture" "Zone copiée dans le presse-papier"\''
-	 )
+	)
 )
 
 -- Touche Print : Capture plein écran enregistrée dans ~/Pictures/Screenshots
@@ -322,7 +338,7 @@ hl.bind(
 	"Print",
 	hl.dsp.exec_cmd(
 		"noctalia msg screenshot-fullscreen"
-	--	'bash -c \'mkdir -p ~/Pictures/Screenshots && grim ~/Pictures/Screenshots/$(date +%Y-%m-%d_%H-%M-%S.png) && notify-send "Capture" "Plein écran sauvegardé"\''
+		--	'bash -c \'mkdir -p ~/Pictures/Screenshots && grim ~/Pictures/Screenshots/$(date +%Y-%m-%d_%H-%M-%S.png) && notify-send "Capture" "Plein écran sauvegardé"\''
 	)
 )
 
@@ -341,26 +357,10 @@ hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(), { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
 
 -- Laptop multimedia keys for volume and LCD brightness
-hl.bind(
-	"XF86AudioRaiseVolume",
-	hl.dsp.exec_cmd("noctalia msg volume-up 5"),
-	{ locked = true, repeating = true }
-)
-hl.bind(
-	"XF86AudioLowerVolume",
-	hl.dsp.exec_cmd("noctalia msg volume-down 5"),
-	{ locked = true, repeating = true }
-)
-hl.bind(
-	"XF86AudioMute",
-	hl.dsp.exec_cmd("noctalia msg volume-mute"),
-	{ locked = true, repeating = true }
-)
-hl.bind(
-	"XF86AudioMicMute",
-	hl.dsp.exec_cmd("noctalia msg mic-mute"),
-	{ locked = true, repeating = true }
-)
+hl.bind("XF86AudioRaiseVolume", hl.dsp.exec_cmd("noctalia msg volume-up 5"), { locked = true, repeating = true })
+hl.bind("XF86AudioLowerVolume", hl.dsp.exec_cmd("noctalia msg volume-down 5"), { locked = true, repeating = true })
+hl.bind("XF86AudioMute", hl.dsp.exec_cmd("noctalia msg volume-mute"), { locked = true, repeating = true })
+hl.bind("XF86AudioMicMute", hl.dsp.exec_cmd("noctalia msg mic-mute"), { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessUp", hl.dsp.exec_cmd("noctalia msg brightness-up 5"), { locked = true, repeating = true })
 hl.bind("XF86MonBrightnessDown", hl.dsp.exec_cmd("noctalia msg brightness-down 5"), { locked = true, repeating = true })
 
