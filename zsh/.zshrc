@@ -32,3 +32,18 @@ bindkey '^ ' autosuggest-accept
 
 # Intégration des applications Flatpak dans le PATH de recherche
 export XDG_DATA_DIRS="/var/lib/flatpak/exports/share:$HOME/.local/share/flatpak/exports/share:$XDG_DATA_DIRS:/usr/local/share:/usr/share"
+
+# Ajout des binaires utilisateur (~/.local/bin pour pipx, Antigravity, etc.)
+export PATH="$HOME/.local/bin:$PATH"
+
+# Node Version Manager (désactivé au profit de FNM pour un démarrage instantané)
+# export NVM_DIR="$HOME/.nvm"
+# [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+# [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"
+
+# Fast Node Manager (fnm)
+FNM_PATH="$HOME/.local/share/fnm"
+if [ -d "$FNM_PATH" ]; then
+  export PATH="$FNM_PATH:$PATH"
+  eval "$(fnm env --shell zsh)"
+fi

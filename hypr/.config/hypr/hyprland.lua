@@ -52,8 +52,8 @@ hl.on("hyprland.start", function()
 	)
 	hl.exec_cmd("systemctl --user import-environment WAYLAND_DISPLAY DISPLAY XDG_CURRENT_DESKTOP XDG_SESSION_TYPE")
 
-	-- 2. Authentification Polkit
-	-- hl.exec_cmd("/usr/libexec/hyprpolkitagent")
+	-- 2. Authentification Polkit (agent KDE de Bazzite)
+	hl.exec_cmd("/usr/libexec/kf6/polkit-kde-authentication-agent-1")
 
 	-- 3. Démon de notifications
 	-- hl.exec_cmd("dunst")
