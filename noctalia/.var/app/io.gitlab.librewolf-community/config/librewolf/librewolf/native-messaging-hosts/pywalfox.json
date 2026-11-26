@@ -1,0 +1,9 @@
+{
+  "allowed_extensions": [
+    "pywalfox@frewacom.org"
+  ],
+  "description": "Noctalia Firefox theme native messaging host (Flatpak)",
+  "name": "pywalfox",
+  "path": "/home/minixx/.var/app/io.gitlab.librewolf-community/config/librewolf/librewolf/native-messaging-hosts/noctalia-pywalfox-host.sh",
+  "type": "stdio"
+}

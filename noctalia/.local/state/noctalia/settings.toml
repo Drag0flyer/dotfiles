@@ -142,18 +142,28 @@ mode = "dark"
 source = "custom"
 wallpaper_scheme = "m3-tonal-spot"
 
+    [theme.templates]
+    community_ids = [ "pywalfox" ]
+
 [wallpaper]
 directory = "/home/minixx/Pictures/wallpapers"
 transition_on_startup = true
 
+    [wallpaper.automation]
+    enabled = true
+    interval_seconds = 1800
+    order = "random"
+    pause_on_fullscreen = true
+    recursive = true
+
     [wallpaper.default]
-    path = "/home/minixx/Pictures/wallpapers/wallhaven-21jo2y.png"
+    path = "/home/minixx/Pictures/wallpapers/wallhaven-vp279p.jpg"
 
     [wallpaper.last]
-    path = "/home/minixx/Pictures/wallpapers/wallhaven-21jo2y.png"
+    path = "/home/minixx/Pictures/wallpapers/wallhaven-vp279p.jpg"
 
     [wallpaper.monitors.eDP-1]
-    path = "/home/minixx/Pictures/wallpapers/wallhaven-21jo2y.png"
+    path = "/home/minixx/Pictures/wallpapers/wallhaven-vp279p.jpg"
 
     [[wallpaper.favorite]]
     path = "/home/minixx/Pictures/wallpapers/wallpaper.jpg"
