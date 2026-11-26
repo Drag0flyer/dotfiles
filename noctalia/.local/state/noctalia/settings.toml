@@ -1,0 +1,178 @@
+config_version = 20
+
+[audio]
+colorize_icons = true
+
+[bar.default]
+background_opacity = 0.41999999061226845
+start = [ "launcher", "wallpaper", "workspaces", "temp" ]
+
+[battery]
+warning_threshold = 20
+
+[calendar]
+enabled = true
+
+[dock]
+auto_hide = true
+colorize_icons = true
+
+[idle]
+behavior_order = [ "lock", "screen-off", "lock-and-suspend" ]
+
+    [idle.behavior.lock]
+    action = "lock"
+    enabled = true
+    timeout = 600.0
+
+    [idle.behavior.lock-and-suspend]
+    action = "lock_and_suspend"
+    enabled = false
+    timeout = 900.0
+
+    [idle.behavior.screen-off]
+    action = "screen_off"
+    enabled = true
+    timeout = 660.0
+
+[location]
+auto_locate = true
+
+[lockscreen]
+blur_intensity = 0.0
+fingerprint = false
+tint_intensity = 0.24999999441206455
+wallpaper = "/home/minixx/Pictures/wallpapers/walllock.jpg"
+
+[lockscreen_widgets]
+enabled = false
+schema_version = 2
+widget_order = [ "lockscreen-login-box@HDMI-A-1", "lockscreen-login-box@eDP-1" ]
+
+    [lockscreen_widgets.grid]
+    cell_size = 16
+    major_interval = 4
+    visible = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@HDMI-A-1"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 1920.0
+    cy = 1978.0
+    output = "HDMI-A-1"
+    placement_height = 2160.0
+    placement_width = 3840.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@HDMI-A-1".settings]
+        background_color = "surface_container"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+    [lockscreen_widgets.widget."lockscreen-login-box@eDP-1"]
+    box_height = 196.0
+    box_width = 810.0
+    cx = 960.0
+    cy = 898.0
+    output = "eDP-1"
+    placement_height = 1080.0
+    placement_width = 1920.0
+    rotation = 0.0
+    type = "login_box"
+
+        [lockscreen_widgets.widget."lockscreen-login-box@eDP-1".settings]
+        background_color = "surface_container"
+        background_opacity = 0.88
+        background_radius = 12.0
+        center_password_text = false
+        input_opacity = 1.0
+        input_radius = 6.0
+        layout = "regular"
+        show_caps_lock = true
+        show_keyboard_layout = true
+        show_login_button = true
+        show_media = true
+        show_session_buttons = true
+        show_unlock_hint = true
+        show_weather = true
+
+[notification]
+colorize_icons = true
+
+[plugins]
+enabled = [ "dumbasaroc/bazaarsearch" ]
+
+[shell]
+font_family = "Fira Code Retina"
+polkit_agent = true
+polkit_colorize_icons = true
+screen_time_colorize_icons = true
+telemetry_enabled = true
+
+    [shell.launcher]
+    colorize_icons = true
+    pinned = [ "Librewolf" ]
+
+    [shell.panel]
+    transparency_mode = "glass"
+
+    [shell.screenshot]
+    save_to_file = false
+
+    [shell.window_switcher]
+    colorize_icons = true
+
+[theme]
+builtin = "Ayu"
+community_palette = "Rosey AMOLED"
+custom_palette = "HotPink AMOLED"
+mode = "dark"
+source = "custom"
+wallpaper_scheme = "m3-tonal-spot"
+
+[wallpaper]
+directory = "/home/minixx/Pictures/wallpapers"
+transition_on_startup = true
+
+    [wallpaper.default]
+    path = "/home/minixx/Pictures/wallpapers/wallhaven-21jo2y.png"
+
+    [wallpaper.last]
+    path = "/home/minixx/Pictures/wallpapers/wallhaven-21jo2y.png"
+
+    [wallpaper.monitors.eDP-1]
+    path = "/home/minixx/Pictures/wallpapers/wallhaven-21jo2y.png"
+
+    [[wallpaper.favorite]]
+    path = "/home/minixx/Pictures/wallpapers/wallpaper.jpg"
+
+[widget.active_window]
+colorize_icons = true
+
+[widget.taskbar]
+colorize_icons = true
+
+[widget.tray]
+colorize_icons = true
+
+[widget.wallpaper.actions]
+left = "panel-toggle wallpaper"
+middle = "settings-open-widget"
+right = "exec /home/minixx/.local/bin/noctalia-wallhaven -s random -n 3 --set"
+scroll_down = "wallpaper-previous"
+scroll_up = "wallpaper-next"
+
+[widget.workspaces]
+colorize_icons = true

@@ -1,0 +1,9 @@
+[Unit]
+Description=Synchronisation automatique des fonds d'ecran Wallhaven pour Noctalia
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+ExecStart=/home/minixx/.local/bin/noctalia-wallhaven -n 3 -s toplist -r 1M
+Environment=PATH=/home/minixx/.local/bin:/usr/local/bin:/usr/bin:/bin

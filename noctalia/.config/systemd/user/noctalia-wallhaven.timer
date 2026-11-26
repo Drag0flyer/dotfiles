@@ -1,0 +1,10 @@
+[Unit]
+Description=Telecharge de nouveaux fonds d'ecran Wallhaven quotidiennement
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=1800
+
+[Install]
+WantedBy=timers.target

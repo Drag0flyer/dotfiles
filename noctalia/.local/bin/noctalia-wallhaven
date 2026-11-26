@@ -1,0 +1,292 @@
+#!/usr/bin/env python3
+"""
+noctalia-wallhaven
+Télécharge automatiquement les meilleurs fonds d'écran depuis Wallhaven (ou Reddit)
+directement dans le dossier de wallpapers de Noctalia (~/Pictures/wallpapers).
+"""
+
+import os
+import sys
+import json
+import time
+import urllib.request
+import urllib.parse
+import urllib.error
+import argparse
+import subprocess
+from pathlib import Path
+
+DEFAULT_DIR = Path.home() / "Pictures" / "wallpapers"
+USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36 NoctaliaWallpaperSync/1.0"
+
+def send_notification(title: str, message: str, icon: str = "preferences-desktop-wallpaper"):
+    """Envoie une notification bureau avec notify-send si disponible."""
+    try:
+        subprocess.run(["notify-send", "-a", "Noctalia Wallpapers", "-i", icon, title, message], check=False)
+    except Exception:
+        pass
+
+def set_noctalia_wallpaper(path: Path):
+    """Applique le fond d'écran dans Noctalia via son CLI msg."""
+    try:
+        subprocess.run(["noctalia", "msg", "wallpaper-set", str(path)], check=False)
+    except Exception as e:
+        print(f"⚠️ Impossible d'appliquer le wallpaper via noctalia CLI: {e}")
+
+def fetch_wallhaven(args):
+    """Interroge l'API Wallhaven et retourne une liste de liens d'images."""
+    # Catégories: Général (100), Anime (010), Personnes (001) -> 110 par défaut
+    cat_map = {
+        "all": "111",
+        "general": "100",
+        "anime": "010",
+        "people": "001",
+        "general+anime": "110",
+    }
+    categories = cat_map.get(args.category.lower(), args.category)
+
+    params = {
+        "categories": categories,
+        "purity": "100",  # SFW
+        "sorting": args.sort,
+        "order": "desc",
+        "atleast": args.min_res,
+        "ratios": args.ratios,
+    }
+    if args.query:
+        params["q"] = args.query
+    if args.sort == "toplist":
+        params["topRange"] = args.range
+
+    url = f"https://wallhaven.cc/api/v1/search?{urllib.parse.urlencode(params)}"
+    print(f"🔍 Recherche Wallhaven ({args.sort}, catégorie={args.category}, query='{args.query or 'top'}')...")
+
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except Exception as e:
+        print(f"❌ Erreur lors de la requête Wallhaven: {e}")
+        return []
+
+    items = []
+    for item in data.get("data", []):
+        file_url = item.get("path")
+        file_id = item.get("id")
+        file_ext = Path(file_url).suffix or ".jpg"
+        filename = f"wallhaven-{file_id}{file_ext}"
+        items.append({
+            "id": file_id,
+            "filename": filename,
+            "url": file_url,
+            "resolution": item.get("resolution", "HD"),
+            "category": item.get("category", "")
+        })
+    return items
+
+def fetch_reddit(args):
+    """Récupère les images depuis les top posts d'un subreddit de wallpapers."""
+    sub = args.reddit.strip().lstrip("r/")
+    url = f"https://www.reddit.com/r/{sub}/top.json?t={args.range}&limit=50"
+    print(f"🔍 Recherche Reddit r/{sub} (top={args.range})...")
+
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=15) as resp:
+            data = json.loads(resp.read().decode("utf-8"))
+    except urllib.error.HTTPError as e:
+        if e.code == 403:
+            print(f"❌ Reddit bloque les requêtes non-authentifiées (HTTP 403). Privilégiez Wallhaven !")
+        else:
+            print(f"❌ Erreur lors de la requête Reddit: {e}")
+        return []
+    except Exception as e:
+        print(f"❌ Erreur lors de la requête Reddit: {e}")
+        return []
+
+    items = []
+    posts = data.get("data", {}).get("children", [])
+    valid_exts = {".jpg", ".jpeg", ".png", ".webp"}
+
+    for p in posts:
+        post = p.get("data", {})
+        post_url = post.get("url", "")
+        parsed = urllib.parse.urlparse(post_url)
+        ext = Path(parsed.path).suffix.lower()
+
+        # Ne retenir que les images directes (pas les galeries ou vidéos)
+        if ext in valid_exts:
+            post_id = post.get("id")
+            title_slug = "".join(c for c in post.get("title", "")[:30] if c.isalnum() or c in " -_").strip()
+            filename = f"reddit-{sub}-{post_id}{ext}"
+            items.append({
+                "id": post_id,
+                "filename": filename,
+                "url": post_url,
+                "resolution": "HD",
+                "category": sub
+            })
+    return items
+
+def download_file(url: str, dest_path: Path) -> bool:
+    """Télécharge un fichier avec gestion d'erreurs."""
+    temp_path = dest_path.with_suffix(dest_path.suffix + ".tmp")
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as resp:
+            with open(temp_path, "wb") as f:
+                f.write(resp.read())
+        temp_path.replace(dest_path)
+        return True
+    except Exception as e:
+        print(f"⚠️ Échec du téléchargement de {url}: {e}")
+        if temp_path.exists():
+            temp_path.unlink()
+        return False
+
+def print_custom_help():
+    """Affiche une aide claire, stylisée et détaillée avec exemples."""
+    use_color = sys.stdout.isatty()
+    C_TITLE = "\033[1;35m" if use_color else ""
+    C_HEAD = "\033[1;33m" if use_color else ""
+    C_OPT = "\033[1;32m" if use_color else ""
+    C_CMD = "\033[1;37m" if use_color else ""
+    C_CYAN = "\033[0;36m" if use_color else ""
+    C_RESET = "\033[0m" if use_color else ""
+
+    help_text = f"""
+{C_TITLE}╔════════════════════════════════════════════════════════════════════════════════╗{C_RESET}
+{C_TITLE}║{C_RESET}  {C_CMD}noctalia-wallhaven{C_RESET} - Synchronisateur de Wallpapers pour Noctalia Shell       {C_TITLE}║{C_RESET}
+{C_TITLE}╚════════════════════════════════════════════════════════════════════════════════╝{C_RESET}
+
+{C_HEAD}UTILISATION:{C_RESET}
+    noctalia-wallhaven [OPTIONS]
+    noctalia-wallhaven help
+
+{C_HEAD}DESCRIPTION:{C_RESET}
+    Télécharge automatiquement des fonds d'écran haute qualité (4K / 1080p)
+    depuis Wallhaven directement dans votre dossier de fonds d'écran Noctalia
+    ({C_CYAN}~/Pictures/wallpapers{C_RESET}).
+
+{C_HEAD}OPTIONS DE RECHERCHE & FILTRES:{C_RESET}
+    {C_OPT}-q, --query <terme>{C_RESET}      Mot-clé ou thème recherché (ex: cyberpunk, nature, anime, space)
+    {C_OPT}-n, --limit <nombre>{C_RESET}     Nombre de nouveaux fonds à télécharger (défaut: 5)
+    {C_OPT}-s, --sort <tri>{C_RESET}         Mode de tri : toplist (défaut), hot, views, random, date_added
+    {C_OPT}-r, --range <période>{C_RESET}    Période pour toplist : 1d, 3d, 1w, 1M (défaut), 3M, 6M, 1y, all
+    {C_OPT}-c, --category <cat>{C_RESET}     Catégories : general, anime, people, all, general+anime (défaut)
+    {C_OPT}--min-res <résolution>{C_RESET}   Résolution minimale requise (défaut: 1920x1080)
+    {C_OPT}--ratios <ratios>{C_RESET}        Ratios d'écran acceptés (défaut: 16x9,16x10)
+
+{C_HEAD}OPTIONS DE DESTINATION & INTÉGRATION:{C_RESET}
+    {C_OPT}-d, --dir <chemin>{C_RESET}       Répertoire cible (défaut: ~/Pictures/wallpapers)
+    {C_OPT}--subfolder <nom>{C_RESET}        Sous-dossier optionnel (ex: anime, retro, cyberpunk)
+    {C_OPT}--set{C_RESET}                    Applique directement le premier wallpaper téléchargé dans Noctalia
+    {C_OPT}--silent{C_RESET}                 Désactive les notifications de bureau notify-send
+    {C_OPT}-h, --help, help{C_RESET}         Affiche cette aide détaillée
+
+{C_HEAD}EXEMPLES COURANTS:{C_RESET}
+    {C_CMD}noctalia-wallhaven{C_RESET}
+        → Télécharge les 5 meilleurs fonds du mois et les ajoute à Noctalia.
+
+    {C_CMD}noctalia-wallhaven -q "cyberpunk" --set{C_RESET}
+        → Télécharge 5 fonds cyberpunk et applique immédiatement le premier.
+
+    {C_CMD}noctalia-wallhaven -q "nature" -n 10 -s views{C_RESET}
+        → Télécharge les 10 fonds nature les plus vus.
+
+    {C_CMD}noctalia-wallhaven -s random -n 3{C_RESET}
+        → Pioche 3 fonds au hasard de qualité 4K/1080p.
+
+    {C_CMD}noctalia-wallhaven -c anime -q "ghibli"{C_RESET}
+        → Recherche spécifiquement dans la catégorie anime.
+
+{C_HEAD}INTÉGRATION NOCTALIA:{C_RESET}
+    • Les images téléchargées apparaissent immédiatement dans le panneau Wallpaper de Noctalia.
+    • Noctalia extrait automatiquement la palette Material 3 pour adapter les couleurs du système.
+    • Rotation automatique Noctalia : configurez [wallpaper.automation] dans settings.toml.
+    • Téléchargement quotidien auto : systemctl --user enable --now noctalia-wallhaven.timer
+"""
+    print(help_text)
+
+def main():
+    if len(sys.argv) > 1 and sys.argv[1] in ("help", "-h", "--help"):
+        print_custom_help()
+        return 0
+
+    parser = argparse.ArgumentParser(
+        description="Synchronise des wallpapers Wallhaven / Reddit avec le service wallpaper de Noctalia.",
+        add_help=False
+    )
+    parser.add_argument("-h", "--help", action="store_true", help="Affiche l'aide")
+    parser.add_argument("-q", "--query", default="", help="Mot-clé de recherche (ex: nature, cyberpunk, minimal, space, anime)")
+    parser.add_argument("-n", "--limit", type=int, default=5, help="Nombre de nouveaux wallpapers à télécharger (défaut: 5)")
+    parser.add_argument("-s", "--sort", default="toplist", choices=["toplist", "hot", "views", "random", "date_added"], help="Tri Wallhaven (défaut: toplist)")
+    parser.add_argument("-r", "--range", default="1M", choices=["1d", "3d", "1w", "1M", "3M", "6M", "1y", "all"], help="Période du top (défaut: 1M)")
+    parser.add_argument("-c", "--category", default="general+anime", help="Catégories: general, anime, people, all, ou combinaison 110 (défaut: general+anime)")
+    parser.add_argument("--min-res", default="1920x1080", help="Résolution minimale (défaut: 1920x1080)")
+    parser.add_argument("--ratios", default="16x9,16x10", help="Ratios d'écran (défaut: 16x9,16x10)")
+    parser.add_argument("-d", "--dir", default=str(DEFAULT_DIR), help=f"Dossier cible (défaut: {DEFAULT_DIR})")
+    parser.add_argument("--subfolder", default="", help="Sous-dossier optionnel (ex: 'wallhaven' ou 'cyberpunk')")
+    parser.add_argument("--reddit", default="", help="Télécharger depuis un subreddit (ex: wallpapers, wallpaper, EarthPorn)")
+    parser.add_argument("--set", action="store_true", help="Applique immédiatement le 1er nouveau wallpaper dans Noctalia")
+    parser.add_argument("--silent", action="store_true", help="N'affiche pas les notifications de bureau")
+
+    args = parser.parse_args()
+
+    if args.help:
+        print_custom_help()
+        return 0
+
+    # Détermination du dossier de destination
+    target_dir = Path(args.dir).expanduser()
+    if args.subfolder:
+        target_dir = target_dir / args.subfolder
+    target_dir.mkdir(parents=True, exist_ok=True)
+
+    print(f"📁 Dossier cible : {target_dir}")
+
+    # Récupération de la liste des wallpapers
+    if args.reddit:
+        candidates = fetch_reddit(args)
+    else:
+        candidates = fetch_wallhaven(args)
+
+    if not candidates:
+        print("❌ Aucun fond d'écran trouvé correspondant aux critères.")
+        return 1
+
+    downloaded = []
+    print(f"⏳ Téléchargement (maximum {args.limit} nouveaux)...")
+
+    for item in candidates:
+        if len(downloaded) >= args.limit:
+            break
+
+        dest = target_dir / item["filename"]
+        if dest.exists():
+            continue  # Déjà téléchargé
+
+        print(f"  ⬇️ Téléchargement : {item['filename']} ({item['resolution']})...")
+        if download_file(item["url"], dest):
+            downloaded.append(dest)
+            time.sleep(0.5)  # Pause courtoise pour l'API
+
+    count = len(downloaded)
+    if count == 0:
+        print("ℹ️ Tous les fonds d'écran sélectionnés sont déjà présents dans le dossier.")
+    else:
+        print(f"✅ {count} nouveau(x) fond(s) d'écran ajouté(s) avec succès !")
+        if not args.silent:
+            send_notification(
+                "Noctalia Wallpaper Sync",
+                f"{count} nouveau(x) fond(s) d'écran ajouté(s) dans Noctalia !"
+            )
+
+        if args.set and downloaded:
+            print(f"🎨 Application du wallpaper dans Noctalia : {downloaded[0].name}")
+            set_noctalia_wallpaper(downloaded[0])
+
+    return 0
+
+if __name__ == "__main__":
+    sys.exit(main())
