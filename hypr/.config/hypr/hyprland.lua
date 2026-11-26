@@ -335,6 +335,9 @@ hl.bind(
 	)
 )
 
+-- Super + Shift + R : Capture vidéo de zone (lancer / arrêter)
+hl.bind(mainMod .. " + SHIFT + R", hl.dsp.exec_cmd("record-toggle.sh"))
+
 -- Touche Print : Capture plein écran enregistrée dans ~/Pictures/Screenshots
 hl.bind(
 	"Print",
