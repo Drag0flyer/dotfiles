@@ -17,6 +17,11 @@ enabled = true
 auto_hide = true
 colorize_icons = true
 
+[hooks]
+session_locked = [ "noctalia msg config-set wallpaper.automation.enabled false" ]
+session_unlocked = [ "noctalia msg config-set wallpaper.automation.enabled true" ]
+started = [ "noctalia msg config-set wallpaper.automation.enabled true" ]
+
 [idle]
 behavior_order = [ "lock", "screen-off", "lock-and-suspend" ]
 
@@ -157,13 +162,13 @@ transition_on_startup = true
     recursive = true
 
     [wallpaper.default]
-    path = "/home/minixx/Pictures/wallpapers/wallhaven-vp279p.jpg"
+    path = "/home/minixx/Pictures/wallpapers/wallhaven-vp3dep.jpg"
 
     [wallpaper.last]
-    path = "/home/minixx/Pictures/wallpapers/wallhaven-vp279p.jpg"
+    path = "/home/minixx/Pictures/wallpapers/wallhaven-vp3dep.jpg"
 
     [wallpaper.monitors.eDP-1]
-    path = "/home/minixx/Pictures/wallpapers/wallhaven-vp279p.jpg"
+    path = "/home/minixx/Pictures/wallpapers/wallhaven-vp3dep.jpg"
 
     [[wallpaper.favorite]]
     path = "/home/minixx/Pictures/wallpapers/wallpaper.jpg"
